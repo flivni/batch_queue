@@ -1,5 +1,3 @@
 require "batch_queue/version"
+require "batch_queue/batch_queue"
 
-module BatchQueue
-  # Your code goes here...
-end
