@@ -26,6 +26,7 @@ class BatchQueue
       @queue.push(object)
       @cond_var.signal
     end
+    object
   end
   alias << push
 
@@ -43,14 +44,17 @@ class BatchQueue
       while @is_running do
         while (@queue.size >= @max_batch_size) ||
             (!@max_interval_seconds.nil? && @queue.size > 0 && Time.now >= t0 + @max_interval_seconds) do
+          arr = []
+          [@queue.size, @max_batch_size].min.times do
+            arr << @queue.pop
+          end
+          @mutex.unlock
           begin
-            arr = []
-            [@queue.size, @max_batch_size].min.times do
-              arr << @queue.pop
-            end
             @block.call(arr)
           rescue StandardError => exc
             @on_error.call(exc) if @on_error
+          ensure
+            @mutex.lock
           end
         end
         t0 = Time.now

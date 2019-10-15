@@ -11,7 +11,7 @@ Gem::Specification.new do |spec|
 
   spec.summary       = 'An in-memory queue that takes data and allows you to process it, in batches, on a background thread.'
   # spec.description   = ''
-  spec.homepage      = "https://github.com/flivni/batch_queue"
+  spec.homepage      = 'https://github.com/flivni/batch_queue'
   spec.license       = "MIT"
 
   # Prevent pushing this gem to RubyGems.org. To allow pushes either set the 'allowed_push_host'
