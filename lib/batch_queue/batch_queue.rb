@@ -13,6 +13,10 @@ class BatchQueue
     @mutex = Mutex.new
     @cond_var = ConditionVariable.new
     @runner = Thread.new { run }
+
+    at_exit do
+      stop
+    end
   end
 
   # a block taking taking an exception as a parameter
@@ -36,6 +40,15 @@ class BatchQueue
     end
   end
 
+  # stops the queue and signals to flush remaining queue, blocking until done.
+  def stop
+    @mutex.synchronize do
+      @is_running = false
+      @cond_var.signal
+    end
+    @runner.join
+  end
+
   private
 
   def run
@@ -44,29 +57,39 @@ class BatchQueue
       while @is_running do
         while (@queue.size >= @max_batch_size) ||
             (!@max_interval_seconds.nil? && @queue.size > 0 && Time.now >= t0 + @max_interval_seconds) do
-          arr = []
-          [@queue.size, @max_batch_size].min.times do
-            arr << @queue.pop
-          end
-          @mutex.unlock
-          begin
-            @block.call(arr)
-          rescue StandardError => exc
-            @on_error.call(exc) if @on_error
-          ensure
-            @mutex.lock
-          end
+          arr = take_batch
+          process_batch(arr)
         end
         t0 = Time.now
         @cond_var.wait(@mutex, @max_interval_seconds)
       end
+
+      # exiting
+      while @queue.size > 0
+        arr = take_batch
+        process_batch(arr)
+      end
     end
   end
 
-  # stops the queue and calls on_batch for all remaining
-  def stop
-    @mutex.synchronize do
-      @is_running = false
+
+  def take_batch
+    arr = []
+    [@queue.size, @max_batch_size].min.times do
+      arr << @queue.pop
+    end
+    arr
+  end
+
+  # we assume that we have the mutex lock before calling
+  def process_batch(arr)
+    @mutex.unlock
+    begin
+      @block.call(arr)
+    rescue StandardError => exc
+      @on_error.call(exc) if @on_error
+    ensure
+      @mutex.lock
     end
   end
 end
