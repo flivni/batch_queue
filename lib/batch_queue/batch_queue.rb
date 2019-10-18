@@ -19,11 +19,6 @@ class BatchQueue
     end
   end
 
-  # a block taking taking an exception as a parameter
-  def on_error(&block)
-    @on_error = block
-  end
-
   def push(object)
     @mutex.synchronize do
       raise 'BatchQueue is stopped' unless @is_running
@@ -87,7 +82,7 @@ class BatchQueue
     begin
       @block.call(arr)
     rescue StandardError => exc
-      @on_error.call(exc) if @on_error
+      puts "BatchQueue: Unhandled exception #{exc.inspect}"
     ensure
       @mutex.lock
     end

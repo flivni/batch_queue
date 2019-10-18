@@ -1,8 +1,24 @@
 # BatchQueue
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/batch_queue`. To experiment with that code, run `bin/console` for an interactive prompt.
+BatchQueue is queue that takes jobs and runs them, in aggregate, via a callback on a background thread.  You can process a “batch” of N jobs at a time or after T seconds whichever comes sooner.
 
-TODO: Delete this and the text above, and describe your gem
+Example: You want to send metrics to Amazon’s AWS CloudWatch service every 60 seconds or when the batch size reaches 20, whichever comes first. You might write code like this:
+
+```
+# Create the AWS CloudWatch Client
+cw_client = Aws::CloudWatch::Client.new(...)
+
+# Set up the BatchQueue
+BatchQueue.new(max_batch_size: 20, max_interval_seconds: 60) do |batch_metric_data|
+    cw_client.put_metric_data(:metric_data => batch_metric_data)
+end
+
+# Add to the BatchQueue
+@bq << {
+    metric_name: 'Widgets',
+    value: 1
+}
+```
 
 ## Installation
 
@@ -22,7 +38,28 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+### 1. Set up the BatchQueue
+Each BatchQueue gets its own background thread that executes jobs.
+```
+bq = BatchQueue.new(max_batch_size: 20, max_interval_seconds: 60) do |batch_metric_data|
+    # Put your code that you want to execute here.
+end
+```
+
+### 2. Add a job to the queue
+You can add any object to the queue.
+```
+bq << {
+    # your object here.
+}
+
+```
+or
+```
+bq << MyJob.new(...)
+
+```
+
 
 ## Development
 
@@ -32,7 +69,7 @@ To install this gem onto your local machine, run `bundle exec rake install`. To 
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/batch_queue.
+Bug reports and pull requests are welcome on GitHub at https://github.com/flivni/batch_queue.
 
 ## License
 

@@ -45,27 +45,6 @@ class BatchQueueTest < Minitest::Test
     assert_equal 0, bq.size
   end
 
-  def test_it_handles_error
-    is_error_handled = false
-
-    bq = BatchQueue.new(max_batch_size: 2, max_interval_seconds: 1) do |_arr|
-      raise 'an error'
-    end
-
-    bq.on_error do |err|
-      is_error_handled = true
-      assert_equal 'an error', err.message
-    end
-
-    bq << 'Yo'
-    sleep(0.2)
-    assert !is_error_handled
-
-    bq << 'Whatsup'
-    sleep(0.2)
-    assert is_error_handled
-  end
-
   def test_it_handles_close
     processed_count = 0
     bq = BatchQueue.new(max_batch_size: 2, max_interval_seconds: 1) do |arr|
