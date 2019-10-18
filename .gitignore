@@ -7,4 +7,4 @@
 /pkg/
 /spec/reports/
 /tmp/
-/batch_queue-0.1.0.gem
+/batch_queue-*.gem

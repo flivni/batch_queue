@@ -2,7 +2,8 @@
 
 BatchQueue is queue that takes jobs and runs them, in aggregate, via a callback on a background thread.  You can process a “batch” of N jobs at a time or after T seconds whichever comes sooner.
 
-Example: You want to send metrics to Amazon’s AWS CloudWatch service every 60 seconds or when the batch size reaches 20, whichever comes first. You might write code like this:
+## Example
+You want to send metrics to Amazon’s AWS CloudWatch service every 60 seconds or when the batch size reaches 20, whichever comes first. You might write code like this:
 
 ```
 # Create the AWS CloudWatch Client
