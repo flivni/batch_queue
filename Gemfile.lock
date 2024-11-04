@@ -19,13 +19,14 @@ GEM
 
 PLATFORMS
   ruby
+  universal-darwin-24
 
 DEPENDENCIES
   batch_queue!
-  bundler (~> 1.16)
+  bundler (~> 2.2)
   minitest (~> 5.0)
   minitest-reporters (~> 1.4)
   rake (~> 13.0)
 
 BUNDLED WITH
-   1.17.2
+   2.3.26
