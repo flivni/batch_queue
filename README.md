@@ -79,7 +79,9 @@ You have two options for handling errors in `BatchQueue`:
 * Set a global error handler:
 
   ```
-  bq.on_error = ->(e) { puts e.message }
+  bq.on_error do |e|
+    puts e.message
+  end
   ```
 
 If neither method is used, `BatchQueue` will catch the exception and print it to 
