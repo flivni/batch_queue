@@ -1,4 +1,7 @@
 class BatchQueue
+  attr_reader :max_batch_size
+  attr_reader :max_interval_seconds
+
   # starts the queue
   # either max_batch_size or interval_milliseconds or both must be set
   def initialize(max_batch_size: nil, max_interval_seconds: nil, &block)
@@ -13,6 +16,7 @@ class BatchQueue
     @mutex = Mutex.new
     @cond_var = ConditionVariable.new
     @runner = Thread.new { run }
+    @on_error_callback = nil
 
     at_exit do
       stop
@@ -42,6 +46,10 @@ class BatchQueue
       @cond_var.signal
     end
     @runner.join
+  end
+
+  def on_error(&block)
+    @on_error_callback = block
   end
 
   private
@@ -81,8 +89,12 @@ class BatchQueue
     @mutex.unlock
     begin
       @block.call(arr)
-    rescue StandardError => exc
-      puts "BatchQueue: Unhandled exception #{exc.inspect}"
+    rescue StandardError => e
+      if @on_error_callback
+        @on_error_callback.call(e)
+      else
+        puts "BatchQueue: Unhandled exception #{exc.inspect}"
+      end
     ensure
       @mutex.lock
     end

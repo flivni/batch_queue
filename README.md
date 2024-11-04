@@ -60,7 +60,30 @@ or
 bq << MyJob.new(...)
 
 ```
+### 3. Error handling
+You have two options for handling errors in `BatchQueue`:
 
+* Rescue exceptions within the processing block:
+
+  ```
+  bq = BatchQueue.new(max_batch_size: 20, max_interval_seconds: 60) do |batch_metric_data|
+    begin
+        # Put your code that you want to execute here.
+    rescue => e
+        # Handle the exception here.
+    end
+  end
+
+  ```
+
+* Set a global error handler:
+
+  ```
+  bq.on_error = ->(e) { puts e.message }
+  ```
+
+If neither method is used, `BatchQueue` will catch the exception and print it to 
+the standard console output.
 
 ## Development
 
