@@ -80,4 +80,16 @@ class BatchQueueTest < Minitest::Test
     assert_equal 0, bq.size
     assert_equal 1, processed_count
   end
+
+  def test_it_sets_thread_name
+    thread_name = nil
+    bq = BatchQueue.new(name: 'test-thread', max_batch_size: 1) do |arr|
+      thread_name = Thread.current.name
+    end
+
+    bq << 'test'
+    sleep(0.2)
+    assert_equal 'test-thread', thread_name
+    bq.stop
+  end
 end

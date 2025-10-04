@@ -1,21 +1,24 @@
 class BatchQueue
+  attr_reader :name
   attr_reader :max_batch_size
   attr_reader :max_interval_seconds
 
   # starts the queue
   # either max_batch_size or interval_milliseconds or both must be set
-  def initialize(max_batch_size: nil, max_interval_seconds: nil, &block)
+  def initialize(name: nil, max_batch_size: nil, max_interval_seconds: nil, &block)
     if max_batch_size.nil? && max_interval_seconds.nil?
       raise 'either max_batch_size or max_interval_seconds or both must be set'
     end
     @is_running = true
     @queue = Queue.new
     @block = block
+    @name = name
     @max_batch_size = max_batch_size
     @max_interval_seconds = max_interval_seconds
     @mutex = Mutex.new
     @cond_var = ConditionVariable.new
     @runner = Thread.new { run }
+    @runner.name = name if !name.nil? && @runner.respond_to?(:name=)
     @on_error_callback = nil
 
     at_exit do
